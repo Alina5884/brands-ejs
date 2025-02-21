@@ -6,7 +6,9 @@ const flash = require("connect-flash");
 const MongoDBStore = require("connect-mongodb-session")(session);
 const app = express();
 
+const connectDB = require("./db/connect");
 const url = process.env.MONGO_URI;
+
 const store = new MongoDBStore({
   uri: url,
   collection: "mySessions",
@@ -29,35 +31,31 @@ if (app.get("env") === "production") {
 }
 
 app.use(session(sessionParms));
+
+const passport = require("passport");
+const passportInit = require("./passport/passportInit");
+
+passportInit();
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.use(flash());
+
+app.use(require("./middleware/storeLocals"));
 
 app.set("view engine", "ejs");
 app.use(require("body-parser").urlencoded({ extended: true }));
 
-app.use((req, res, next) => {
-    res.locals.info = req.flash("info");
-    res.locals.errors = req.flash("error");
-    next();
-  });
-  
 // secret word handling
-app.get("/secretWord", (req, res) => {
-    if (!req.session.secretWord) {
-      req.session.secretWord = "syzygy";
-    }
-    res.render("secretWord", { secretWord: req.session.secretWord });
-});
+const auth = require("./middleware/auth");
+const secretWordRouter = require("./routes/secretWord");
 
-app.post("/secretWord", (req, res) => {
-    if (req.body.secretWord.toUpperCase()[0] == "P") {
-      req.flash("error", "That word won't work!");
-      req.flash("error", "You can't use words that start with p.");
-    } else {
-      req.session.secretWord = req.body.secretWord;
-      req.flash("info", "The secret word was changed.");
-    }
-    res.redirect("/secretWord");
+app.use("/secretWord", auth, secretWordRouter);
+
+app.get("/", (req, res) => {
+  res.render("index");
 });
+app.use("/sessions", require("./routes/sessionRoutes"));
 
 app.use((req, res) => {
   res.status(404).send(`That page (${req.url}) was not found.`);
@@ -72,11 +70,13 @@ const port = process.env.PORT || 3000;
 
 const start = async () => {
   try {
-    app.listen(port, () =>
-      console.log(`Server is listening on port ${port}...`)
-    );
+    await connectDB(url);
+    console.log("connected to MongoDB");
+
+    app.listen(port, () => console.log(`Server is listening on port ${port}...`));
   } catch (error) {
-    console.log(error);
+    console.error("Error starting the server:", error);
+    process.exit(1);
   }
 };
 
