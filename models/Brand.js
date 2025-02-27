@@ -45,6 +45,6 @@ const BrandSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
-}, { timestamsp: true });
+}, { timestamps: true });
 
 module.exports = mongoose.model('Brand', BrandSchema)

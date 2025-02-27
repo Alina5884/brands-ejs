@@ -1,0 +1,44 @@
+<%- include("partials/head.ejs") %>
+<%- include("partials/header.ejs", { csrfToken: csrfToken }) %>
+
+<h2><%= brand ? 'Edit' : 'Add' %> Brand</h2>
+<form method="POST" action="<%= brand ? '/brands/update/' + brand._id : '/brands' %>">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  
+  <label for="name">Brand Name</label>
+  <input type="text" name="name" value="<%= brand ? brand.name : '' %>" required>
+
+  <label for="category">Category</label>
+  <select name="category" required>
+    <option value="Clothing" <%= brand && brand.category === 'Clothing' ? 'selected' : '' %>>Clothing</option>
+    <option value="Shoes" <%= brand && brand.category === 'Shoes' ? 'selected' : '' %>>Shoes</option>
+    <option value="Accessories" <%= brand && brand.category === 'Accessories' ? 'selected' : '' %>>Accessories</option>
+    <option value="Tableware" <%= brand && brand.category === 'Tableware' ? 'selected' : '' %>>Tableware</option>
+    <option value="Other" <%= brand && brand.category === 'Other' ? 'selected' : '' %>>Other</option>
+  </select>
+
+  <label for="description">Description</label>
+  <textarea name="description" required><%= brand ? brand.description : '' %></textarea>
+
+  <label for="logo">Logo URL</label>
+  <input type="url" name="logo" value="<%= brand ? brand.logo : '' %>" required>
+
+  <label for="website">Website</label>
+  <input type="url" name="website" value="<%= brand ? brand.website : '' %>" required>
+
+  <label for="ecoFriendly">Eco-Friendly</label>
+  <input type="checkbox" name="ecoFriendly" <%= brand && brand.ecoFriendly ? 'checked' : '' %> />
+
+  <label for="nonToxic">Non-Toxic</label>
+  <input type="checkbox" name="nonToxic" <%= brand && brand.nonToxic ? 'checked' : '' %> />
+
+  <label for="plasticFree">Plastic-Free</label>
+  <input type="checkbox" name="plasticFree" <%= brand && brand.plasticFree ? 'checked' : '' %> />
+
+  <label for="veganCrueltyFree">Vegan & Cruelty-Free</label>
+  <input type="checkbox" name="veganCrueltyFree" <%= brand && brand.veganCrueltyFree ? 'checked' : '' %> />
+
+  <button type="submit"><%= brand ? 'Update' : 'Add' %> Brand</button>
+</form>
+
+<%- include("partials/footer.ejs") %>
